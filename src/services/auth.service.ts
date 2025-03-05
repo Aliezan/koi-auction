@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import userRepository from "../repositories/user.repository";
 import walletRepository from "../repositories/wallet.repository";
-import User from "../entities/User";
+import User, { UserRole } from "../entities/User";
 import { ErrorHandler } from "../utils/response/handleError";
 
 const ACCESS_TOKEN_EXPIRY = "1d";
@@ -81,7 +81,57 @@ const register = async (
   return newUser.user_id;
 };
 
+const registerAdmin = async (
+  username: string,
+  email: string,
+  phone: string,
+  password: string,
+) => {
+  const parsedPhone = phone
+    .trim()
+    .replace(/[\s-]/g, "")
+    .replace(/^0/, "+62")
+    .replace(/^(?!\+)/, "+62");
+
+  const existingUser = await userRepository.findOne({
+    where: [{ email }, { username }, { phone: parsedPhone }],
+  });
+
+  // Throw error based on same value
+  if (existingUser?.email === email) {
+    throw ErrorHandler.badRequest("Email already exists");
+  }
+  if (existingUser?.username === username) {
+    throw ErrorHandler.badRequest("Username already exists");
+  }
+  if (existingUser?.phone === parsedPhone) {
+    throw ErrorHandler.badRequest("Phone number already exists");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = userRepository.create({
+    username,
+    email,
+    phone: parsedPhone,
+    password: hashedPassword,
+    role: UserRole.ADMIN,
+  });
+
+  await userRepository.save(newUser);
+
+  const wallet = walletRepository.create({
+    user_id: newUser.user_id,
+    balance: 0.0,
+  });
+
+  await walletRepository.save(wallet);
+
+  return newUser.user_id;
+};
+
 export const authService = {
   login,
   register,
+  registerAdmin,
 };
