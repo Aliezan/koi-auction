@@ -50,7 +50,10 @@ const createAuction = async (
 
     const auction = await auctionRepository.create({
       ...data,
-      user,
+      user: {
+        user_id: user.user_id,
+        username: user.username,
+      },
     });
 
     await auctionRepository.save(auction);
