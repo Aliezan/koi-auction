@@ -103,7 +103,9 @@ const createBaseQuery = (repository: Repository<Auction>) =>
     .addSelect(["participant_user.user_id", "participant_user.username"])
     .leftJoinAndSelect("auction.highest_bid", "highest_bid")
     .leftJoin("highest_bid.user", "highest_bid_user")
-    .addSelect(["highest_bid_user.user_id", "highest_bid_user.username"]);
+    .addSelect(["highest_bid_user.user_id", "highest_bid_user.username"])
+    .leftJoin("auction.winner", "winner")
+    .addSelect(["winner.user_id", "winner.username"]);
 
 const auctionRepository = dataSource.getRepository(Auction).extend({
   async getAllAuctions(

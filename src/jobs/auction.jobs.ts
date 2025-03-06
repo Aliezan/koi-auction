@@ -4,9 +4,9 @@ import { Job } from "../entities/Job";
 import auctionRepository from "../repositories/auction.repository";
 import { auctionEmitter } from "../sockets/auction.socket";
 import JobManager, { JobHandler } from "./jobManager";
-import { auctionService } from "../services/auction.service";
-import { notificationService } from "../services/notification.service";
-import { NotificationType } from "../entities/Notification";
+// import { auctionService } from "../services/auction.service";
+// import { notificationService } from "../services/notification.service";
+// import { NotificationType } from "../entities/Notification";
 
 const jobManager = new JobManager();
 const jobRepository = AppDataSource.getRepository(Job);
@@ -57,38 +57,9 @@ const auctionEndHandler: JobHandler = {
     try {
       const auction = await auctionRepository.findAuctionById(job.referenceId);
 
-      console.log(auction);
-
       if (!auction || auction.status !== AuctionStatus.STARTED) {
         throw new Error(
           `Auction [${job.referenceId}] not found or not in STARTED state`,
-        );
-      }
-
-      // Set winner if there's a highest bid
-      if (auction.highest_bid) {
-        auction.winner_id = auction.highest_bid.user.user_id;
-        auction.final_price = auction.highest_bid.bid_amount;
-        await notificationService.createNotification(
-          auction.winner_id,
-          NotificationType.AUCTION,
-          `You won the auction ${auction.title}. Our admin will contact you in person to complete payment.`,
-          auction.auction_id,
-        );
-        // Refund and notify other participants
-        await auctionService.refundParticipationFee(auction.auction_id);
-        const nonWinnerParticipants = auction.participants.filter(
-          (p) => p.user.user_id !== auction.winner_id,
-        );
-        await Promise.all(
-          nonWinnerParticipants.map((participant) =>
-            notificationService.createNotification(
-              participant.user.user_id,
-              NotificationType.AUCTION,
-              `The auction ${auction.title} has ended. You didn't win this time. We have refunded your participation fee!`,
-              auction.auction_id,
-            ),
-          ),
         );
       }
 

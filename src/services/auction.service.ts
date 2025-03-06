@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { In } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { ErrorHandler } from "../utils/response/handleError";
@@ -13,6 +14,8 @@ import transactionRepository from "../repositories/transaction.repository";
 import userRepository from "../repositories/user.repository";
 import { auctionEmitter } from "../sockets/auction.socket";
 import { auctionJobs } from "../jobs/auction.jobs";
+import { notificationService } from "./notification.service";
+import { NotificationType } from "../entities/Notification";
 
 export const getAllAuctions = async (
   filters?: IAuctionFilter,
@@ -73,6 +76,8 @@ const updateAuction = async (
       reserve_price,
       bid_increment,
       status,
+      winner_id,
+      final_price,
     } = data;
 
     // Fetch the auction by ID to ensure it exists and get the full entity
@@ -99,6 +104,32 @@ const updateAuction = async (
     }
 
     auction.user = user; // Assign the user entity with only necessary fields
+
+    if (auction.status === AuctionStatus.PENDING && winner_id) {
+      auction.winner_id = winner_id;
+      auction.final_price = final_price ?? null;
+      await notificationService.createNotification(
+        auction.winner_id,
+        NotificationType.AUCTION,
+        `You won the auction ${auction.title}. Our admin will contact you in person to complete payment.`,
+        auction.auction_id,
+      );
+      // Refund and notify other participants
+      await refundParticipationFee(auction.auction_id);
+      const nonWinnerParticipants = auction.participants.filter(
+        (p) => p.user.user_id !== auction.winner_id,
+      );
+      await Promise.all(
+        nonWinnerParticipants.map((participant) =>
+          notificationService.createNotification(
+            participant.user.user_id,
+            NotificationType.AUCTION,
+            `The auction ${auction.title} has ended. You didn't win this time. We have refunded your participation fee!`,
+            auction.auction_id,
+          ),
+        ),
+      );
+    }
 
     // Save the updated auction entity
     const updatedAuction = await auctionRepository.save(auction);
