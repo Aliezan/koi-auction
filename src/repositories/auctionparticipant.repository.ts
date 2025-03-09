@@ -129,6 +129,31 @@ const auctionParticipantRepository = dataSource
         )
         .getMany();
     },
+    async getAuctionsByParticipant(
+      user_id: string,
+      pagination: PaginationOptions,
+    ) {
+      const qb = this.createQueryBuilder("auctionParticipant")
+        .leftJoinAndSelect("auctionParticipant.auction", "auction")
+        .leftJoinAndSelect("auction.user", "auction_user")
+        .leftJoinAndSelect("auction.bids", "bids", "bids.user_id = :user_id", {
+          user_id,
+        })
+        .where("auctionParticipant.user_id = :user_id", { user_id })
+        .orderBy("bids.bid_time", "DESC");
+
+      applyPagination(qb, pagination);
+
+      const [participants, count] = await qb.getManyAndCount();
+
+      // Transform the result to include last bid info
+      const auctions = participants.map((participant) => ({
+        ...participant,
+        lastBid: participant.auction.bids?.[0] || null,
+      }));
+
+      return { auctions, count };
+    },
     findLatestParticipantByAuctionId(auction_id: string) {
       return this.createQueryBuilder("auctionParticipant")
         .leftJoinAndSelect("auctionParticipant.user", "user")
@@ -136,13 +161,15 @@ const auctionParticipantRepository = dataSource
         .orderBy("auctionParticipant.createdAt", "DESC") // Assuming you have a `createdAt` field
         .getOne();
     },
-    findAuctionsWithParticipantCount() {
-      return this.createQueryBuilder("auctionParticipant")
+    async findAuctionsWithParticipantCount() {
+      const qb = this.createQueryBuilder("auctionParticipant")
         .select("auction.auction_id", "auctionId")
         .addSelect("COUNT(auctionParticipant.user_id)", "participantCount")
         .leftJoin("auctionParticipant.auction", "auction")
-        .groupBy("auction.auction_id")
-        .getRawMany();
+        .groupBy("auction.auction_id");
+
+      const [auctions, count] = await qb.getManyAndCount();
+      return { auctions, count };
     },
   });
 

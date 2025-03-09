@@ -8,6 +8,7 @@ import {
   leaveAuction,
   updateAuction,
 } from "../controllers/auction.controllers";
+import { getAuctionJoinedByUserId } from "../controllers/auctionparticipant.controllers";
 import { parsePaginationAndFilters } from "../middlewares/parsePaginationFilter.middleware";
 import { authorize, protect } from "../middlewares/auth.middleware";
 import createAuctionValidator from "../middlewares/auctionValidator/createAuctionValidator";
@@ -25,6 +26,14 @@ auctionRouter.post(
   createAuctionValidator,
   createAuction,
 );
+
+auctionRouter.get(
+  "/participated",
+  protect,
+  parsePaginationAndFilters,
+  getAuctionJoinedByUserId,
+);
+
 auctionRouter.get("/:auction_id", getAuctionDetails);
 auctionRouter.put(
   "/:auction_id",

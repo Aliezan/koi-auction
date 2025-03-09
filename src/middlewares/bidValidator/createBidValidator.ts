@@ -3,6 +3,8 @@ import { validate } from "class-validator";
 import Bid from "../../entities/Bid";
 import { auctionService } from "../../services/auction.service";
 import { AuctionStatus } from "../../entities/Auction";
+import { AuthenticatedRequest } from "../../types/auth";
+import auctionParticipantRepository from "../../repositories/auctionparticipant.repository";
 
 const createBidValidator = async (
   req: Request,
@@ -17,13 +19,7 @@ const createBidValidator = async (
 
     const { bid_amount } = req.body;
     const { auction_id } = req.params;
-
-    const auction = await auctionService.getAuctionById(auction_id);
-
-    if (auction.status !== AuctionStatus.STARTED) {
-      res.status(400).json({ message: "Auction has not started yet!" });
-      return;
-    }
+    const { user } = req as AuthenticatedRequest;
 
     // Validate if auction_id is present
     if (!auction_id) {
@@ -33,6 +29,24 @@ const createBidValidator = async (
     // Validate if bid_amount is present
     if (!bid_amount) {
       res.status(400).json({ message: "Bid amount is required!" });
+      return;
+    }
+
+    const auction = await auctionService.getAuctionById(auction_id);
+
+    const isJoined =
+      await auctionParticipantRepository.isUserParticipatingInAuction(
+        auction_id,
+        user.user_id,
+      );
+
+    if (!isJoined) {
+      res.status(400).json({ message: "User has not joined this auction!" });
+      return;
+    }
+
+    if (auction.status !== AuctionStatus.STARTED) {
+      res.status(400).json({ message: "Auction has not started yet!" });
       return;
     }
 

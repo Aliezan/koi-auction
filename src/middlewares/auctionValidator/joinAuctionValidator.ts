@@ -4,6 +4,7 @@ import walletRepository from "../../repositories/wallet.repository";
 import { AuthenticatedRequest } from "../../types/auth";
 import { userService } from "../../services/user.service";
 import { AuctionStatus } from "../../entities/Auction";
+import auctionParticipantRepository from "../../repositories/auctionparticipant.repository";
 
 const joinAuctionValidator = async (
   req: Request,
@@ -38,10 +39,22 @@ const joinAuctionValidator = async (
       return;
     }
 
-    if (
-      auction.status !== AuctionStatus.PUBLISHED &&
-      auction.status !== AuctionStatus.STARTED
-    ) {
+    // Check if already joined
+    const isJoined =
+      await auctionParticipantRepository.isUserParticipatingInAuction(
+        auction_id,
+        user.user_id,
+      );
+
+    if (isJoined) {
+      res
+        .status(400)
+        .json({ message: "User has already joined this auction!" });
+      return;
+    }
+    console.log(auction.status);
+    console.log(auction.status === AuctionStatus.STARTED);
+    if (auction.status !== AuctionStatus.STARTED) {
       res.status(400).json({ message: "Cant join this auction yet!" });
       return;
     }

@@ -37,6 +37,7 @@ const createAuctionValidator = async (
         item,
         status: Not(
           In([
+            AuctionStatus.DRAFT,
             AuctionStatus.DELETED,
             AuctionStatus.CANCELLED,
             AuctionStatus.EXPIRED,

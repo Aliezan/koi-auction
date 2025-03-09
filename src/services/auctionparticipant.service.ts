@@ -61,10 +61,23 @@ const createAuctionParticipant = async (
   return auctionParticipant;
 };
 
+const getAuctionsByParticipant = async (
+  userId: string,
+  pagination: PaginationOptions,
+) => {
+  const { auctions, count } =
+    await auctionParticipantRepository.getAuctionsByParticipant(
+      userId,
+      pagination,
+    );
+  return { auctions, count };
+};
+
 export const auctionParticipantService = {
   getAllAuctionParticipants,
   getAuctionParticipantById,
   getAuctionParticipantByAuctionId,
   getAuctionParticipantByUserId,
   createAuctionParticipant,
+  getAuctionsByParticipant,
 };
