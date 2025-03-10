@@ -84,28 +84,30 @@ const placeBid = async (
       throw ErrorHandler.notFound(`Auction with ID ${auction_id} not found`);
     }
 
-    // Extend auction time if within injury time
-    const INJURY_TIME = 1000 * 60 * 5; // 5 minutes
-    const timeRemaining = auction.end_datetime.getTime() - Date.now();
-
-    if (timeRemaining < INJURY_TIME) {
-      auction.end_datetime = new Date(
-        auction.end_datetime.getTime() + INJURY_TIME,
-      );
-      // Reschedule end job
-      await auctionJobs.scheduleEndJob(auction);
-    }
-
-    // Create the bid entity
+    // Create and save the bid entity
     const bid = bidRepository.create({
       user: { user_id },
       auction: { auction_id },
       bid_amount,
       bid_time: new Date(),
     });
-
-    // Save bid within the transaction
     const savedBid = await transactionalEntityManager.save(bid);
+
+    // Make all auction updates at once
+    const INJURY_TIME = 1000 * 60 * 5; // 5 minutes
+    const timeRemaining = auction.end_datetime.getTime() - Date.now();
+
+    // Start collecting all auction changes
+    let auctionChanged = false;
+
+    if (timeRemaining < INJURY_TIME) {
+      auction.end_datetime = new Date(
+        auction.end_datetime.getTime() + INJURY_TIME,
+      );
+      auctionChanged = true;
+      // Reschedule end job
+      await auctionJobs.scheduleEndJob(auction);
+    }
 
     // Update auction's highest bid if this is the highest
     if (
@@ -113,12 +115,17 @@ const placeBid = async (
       bid_amount > (auction.current_highest_bid ?? 0)
     ) {
       auction.highest_bid_id = bid.bid_id;
-      await transactionalEntityManager.save(auction);
+      auctionChanged = true;
     }
 
-    // Update auction's highest bid
+    // Update auction's highest bid amount
     auction.current_highest_bid = bid_amount;
-    await transactionalEntityManager.save(auction);
+    auctionChanged = true;
+
+    // Save all auction changes at once if any changes were made
+    if (auctionChanged) {
+      await transactionalEntityManager.save(auction);
+    }
 
     // Fetch the complete bid data within the same transaction
     const completeBid = await transactionalEntityManager

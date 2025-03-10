@@ -13,6 +13,7 @@ interface UpdateAuctionData {
   bid_increment?: number | null;
   start_datetime?: Date;
   end_datetime?: Date;
+  participation_fee?: number | null;
   status?: AuctionStatus;
 }
 
@@ -101,6 +102,22 @@ const updateAuctionValidator = async (
         );
       }
       updates.reserve_price = price;
+    }
+
+    // Validate reserve_price
+    if ("participation_fee" in req.body) {
+      const price =
+        req.body.participation_fee === null
+          ? null
+          : Number(req.body.participation_fee);
+      if (price !== null) {
+        await validateField(
+          price,
+          (val) => !Number.isNaN(val) && val > 0,
+          "Reserve price must be a valid positive number",
+        );
+      }
+      updates.participation_fee = price;
     }
 
     // Validate bid_increment

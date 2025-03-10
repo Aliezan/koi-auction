@@ -77,10 +77,12 @@ const updateAuction = async (
       end_datetime,
       item,
       reserve_price,
+      participation_fee,
       bid_increment,
       status,
       winner_id,
       final_price,
+      rich_description,
     } = data;
 
     // Fetch the auction by ID to ensure it exists and get the full entity
@@ -93,6 +95,8 @@ const updateAuction = async (
     // Update the auction entity with new data
     auction.title = title ?? auction.title;
     auction.description = description ?? auction.description;
+    auction.rich_description = rich_description ?? auction.rich_description;
+    auction.participation_fee = participation_fee ?? auction.participation_fee;
     auction.item = item ?? auction.item;
     auction.start_datetime = start_datetime ?? auction.start_datetime;
     auction.end_datetime = end_datetime ?? auction.end_datetime;
@@ -171,20 +175,17 @@ const joinAuction = async (auction_id: string, user_id: string) => {
       throw ErrorHandler.notFound(`Auction with ID ${auction_id} not found`);
     }
 
-    const reservePrice = auction.reserve_price ?? 0;
-    const participationFee = reservePrice * 0.1;
-
     const wallet = await walletRepository.findWalletByUserId(user_id);
-    if (wallet.balance < participationFee) {
+    if (wallet.balance < auction.participation_fee) {
       throw ErrorHandler.badRequest("Insufficient balance");
     }
 
-    wallet.balance -= participationFee;
+    wallet.balance -= auction.participation_fee;
     await queryRunner.manager.save(wallet);
 
     const transaction = transactionRepository.create({
       wallet,
-      amount: participationFee,
+      amount: auction.participation_fee,
       type: TransactionType.PARTICIPATE,
       status: TransactionStatus.COMPLETED,
       proof_of_payment: null,
@@ -213,7 +214,6 @@ const joinAuction = async (auction_id: string, user_id: string) => {
 
     return {
       message: "User successfully joined the auction",
-      participationFee,
       auctionParticipant,
     };
   } catch (error) {
@@ -238,8 +238,6 @@ export const getAuctionEndingSoon = async (
   return { auctions, count };
 };
 
-const calculateParticipationFee = (reservePrice: number) => reservePrice * 0.1;
-
 const refundParticipationFee = async (auction_id: string) => {
   const queryRunner = AppDataSource.createQueryRunner();
   await queryRunner.connect();
@@ -257,9 +255,6 @@ const refundParticipationFee = async (auction_id: string) => {
       relations: ["user"],
     });
 
-    const participationFee = calculateParticipationFee(
-      auction.reserve_price ?? 0,
-    );
     const participantIds = participants
       .filter((p) => p.user.user_id !== winnerId)
       .map((p) => p.user.user_id);
@@ -277,7 +272,7 @@ const refundParticipationFee = async (auction_id: string) => {
       .createQueryBuilder()
       .update("wallet")
       .set({
-        balance: () => `balance + ${participationFee}`,
+        balance: () => `balance + ${auction.participation_fee}`,
       })
       .where({ user_id: In(participantIds) })
       .execute();
@@ -285,7 +280,7 @@ const refundParticipationFee = async (auction_id: string) => {
     // Batch create refund transactions
     const refundTransactions = participantIds.map((userId) => ({
       wallet_id: userId,
-      amount: participationFee,
+      amount: auction.participation_fee,
       type: TransactionType.REFUND,
       status: TransactionStatus.COMPLETED,
       proof_of_payment: null,
@@ -301,7 +296,7 @@ const refundParticipationFee = async (auction_id: string) => {
     await queryRunner.commitTransaction();
 
     return {
-      refundedAmount: participationFee * participantIds.length,
+      refundedAmount: auction.participation_fee * participantIds.length,
       participantsRefunded: participantIds.length,
       totalParticipants: participants.length,
     };
