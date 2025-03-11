@@ -73,9 +73,12 @@ const joinAuctionValidator = async (
       return;
     }
 
-    // Calculate participation fee (10% of reserve price)
-
     // Check if the user's wallet has enough balance
+    wallet.balance = parseFloat(wallet.balance.toString());
+    auction.participation_fee = parseFloat(
+      auction.participation_fee.toString(),
+    );
+
     if (wallet.balance < auction.participation_fee) {
       res
         .status(400)

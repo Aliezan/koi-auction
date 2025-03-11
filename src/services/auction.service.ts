@@ -176,9 +176,6 @@ const joinAuction = async (auction_id: string, user_id: string) => {
     }
 
     const wallet = await walletRepository.findWalletByUserId(user_id);
-    if (wallet.balance < auction.participation_fee) {
-      throw ErrorHandler.badRequest("Insufficient balance");
-    }
 
     wallet.balance -= auction.participation_fee;
     await queryRunner.manager.save(wallet);
