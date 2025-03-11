@@ -100,6 +100,8 @@ const createBaseQuery = (repository: Repository<Auction>) =>
     .addSelect(["bid_user.user_id", "bid_user.username"])
     .leftJoinAndSelect("auction.participants", "participants")
     .leftJoin("participants.user", "participant_user")
+    .orderBy("participants.joined_at", "DESC")
+
     .addSelect(["participant_user.user_id", "participant_user.username"]);
 
 const auctionRepository = dataSource.getRepository(Auction).extend({

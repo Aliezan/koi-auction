@@ -22,9 +22,9 @@ export default function createApp() {
   morgan.token("auth", (req: any) => req.headers.authorization || "");
 
   // // Move Morgan middleware before routes
-  // app.use(
-  //   morgan(":method :url :status :response-time ms Auth::auth Body::reqBody"),
-  // );
+  app.use(
+    morgan(":method :url :status :response-time ms Auth::auth Body::reqBody"),
+  );
 
   app.use(
     cors({
