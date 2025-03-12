@@ -9,7 +9,7 @@ interface UpdateAuctionData {
   item?: string;
   title?: string;
   description?: string;
-  reserve_price?: number | null;
+  buynow_price?: number | null;
   bid_increment?: number | null;
   start_datetime?: Date;
   end_datetime?: Date;
@@ -90,10 +90,10 @@ const updateAuctionValidator = async (
       "Description must not be empty",
     );
 
-    // Validate reserve_price
-    if ("reserve_price" in req.body) {
+    // Validate buynow_price
+    if ("buynow_price" in req.body) {
       const price =
-        req.body.reserve_price === null ? null : Number(req.body.reserve_price);
+        req.body.buynow_price === null ? null : Number(req.body.buynow_price);
       if (price !== null) {
         await validateField(
           price,
@@ -101,10 +101,10 @@ const updateAuctionValidator = async (
           "Reserve price must be a valid positive number",
         );
       }
-      updates.reserve_price = price;
+      updates.buynow_price = price;
     }
 
-    // Validate reserve_price
+    // Validate buynow_price
     if ("participation_fee" in req.body) {
       const price =
         req.body.participation_fee === null

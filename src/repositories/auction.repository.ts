@@ -22,8 +22,8 @@ const applyAuctionOrdering = (
     qb.orderBy("auction.end_datetime", order.order);
   }
 
-  if (order.orderBy === "reserve_price") {
-    qb.orderBy("auction.reserve_price", order.order);
+  if (order.orderBy === "buynow_price") {
+    qb.orderBy("auction.buynow_price", order.order);
   }
 
   if (order.orderBy === "created_at") {
@@ -57,13 +57,13 @@ const applyAuctionFilters = (
   }
 
   if (filters.minReservePrice !== undefined) {
-    qb.andWhere("auction.reserve_price >= :minReservePrice", {
+    qb.andWhere("auction.buynow_price >= :minReservePrice", {
       minReservePrice: filters.minReservePrice,
     });
   }
 
   if (filters.maxReservePrice !== undefined) {
-    qb.andWhere("auction.reserve_price <= :maxReservePrice", {
+    qb.andWhere("auction.buynow_price <= :maxReservePrice", {
       maxReservePrice: filters.maxReservePrice,
     });
   }

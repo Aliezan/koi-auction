@@ -15,6 +15,8 @@ const storage = multerS3({
   s3, // The S3 instance
   bucket: process.env.AWS_S3_BUCKET_NAME || "", // Your S3 bucket name
   acl: "public-read", // Ensure the file is publicly readable
+  contentDisposition: "inline", // This prevents download and tries to display the file
+  contentType: multerS3.AUTO_CONTENT_TYPE, // Ensure correct MIME type
   metadata: (
     req: Request,
     file: File,

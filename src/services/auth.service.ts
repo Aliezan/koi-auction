@@ -84,17 +84,10 @@ const register = async (
 const registerAdmin = async (
   username: string,
   email: string,
-  phone: string,
   password: string,
 ) => {
-  const parsedPhone = phone
-    .trim()
-    .replace(/[\s-]/g, "")
-    .replace(/^0/, "+62")
-    .replace(/^(?!\+)/, "+62");
-
   const existingUser = await userRepository.findOne({
-    where: [{ email }, { username }, { phone: parsedPhone }],
+    where: [{ email }, { username }],
   });
 
   // Throw error based on same value
@@ -104,16 +97,12 @@ const registerAdmin = async (
   if (existingUser?.username === username) {
     throw ErrorHandler.badRequest("Username already exists");
   }
-  if (existingUser?.phone === parsedPhone) {
-    throw ErrorHandler.badRequest("Phone number already exists");
-  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const newUser = userRepository.create({
     username,
     email,
-    phone: parsedPhone,
     password: hashedPassword,
     role: UserRole.ADMIN,
   });

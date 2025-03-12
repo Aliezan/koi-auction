@@ -41,13 +41,8 @@ const registerController: RequestHandler = async (req, res, next) => {
 
 const registerAdmin: RequestHandler = async (req, res, next) => {
   try {
-    const { username, email, phone, password } = req.body;
-    const user_id = await authService.registerAdmin(
-      username,
-      email,
-      phone,
-      password,
-    );
+    const { username, email, password } = req.body;
+    const user_id = await authService.registerAdmin(username, email, password);
 
     res.status(200).json({ message: "Admin registered successfully", user_id });
   } catch (error) {

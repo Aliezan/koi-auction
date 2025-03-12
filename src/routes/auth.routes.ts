@@ -5,6 +5,7 @@ import {
   registerController,
 } from "../controllers/auth.controllers";
 import createUserValidator from "../middlewares/userValidator/createUserValidator";
+import createAdminUserValidator from "../middlewares/userValidator/createAdminUserValidator";
 import loginUserValidator from "../middlewares/userValidator/loginUserValidator";
 import { protect, authorize } from "../middlewares/auth.middleware";
 
@@ -16,7 +17,7 @@ authRouter.post(
   "/register-admin",
   protect,
   authorize(["admin"]),
-  createUserValidator,
+  createAdminUserValidator,
   registerAdmin,
 );
 export default authRouter;

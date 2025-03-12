@@ -112,8 +112,8 @@ class Auction {
   })
   @IsOptional()
   @IsPositive()
-  @Min(0, { message: "Reserve price must be a positive number" })
-  declare reserve_price: number;
+  @Min(0, { message: "Buy now price must be a positive number" })
+  declare buynow_price: number;
 
   @Column({
     type: "decimal",

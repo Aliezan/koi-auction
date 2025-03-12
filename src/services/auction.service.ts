@@ -76,7 +76,7 @@ const updateAuction = async (
       start_datetime,
       end_datetime,
       item,
-      reserve_price,
+      buynow_price,
       participation_fee,
       bid_increment,
       status,
@@ -100,7 +100,7 @@ const updateAuction = async (
     auction.item = item ?? auction.item;
     auction.start_datetime = start_datetime ?? auction.start_datetime;
     auction.end_datetime = end_datetime ?? auction.end_datetime;
-    auction.reserve_price = reserve_price ?? auction.reserve_price;
+    auction.buynow_price = buynow_price ?? auction.buynow_price;
     auction.bid_increment = bid_increment ?? auction.bid_increment;
     auction.status = (status?.toUpperCase() as AuctionStatus) ?? auction.status;
 

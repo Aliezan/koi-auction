@@ -19,7 +19,7 @@ const createAuctionValidator = async (
       item,
       title,
       description,
-      reserve_price,
+      buynow_price,
       participation_fee,
       start_datetime,
       end_datetime,
@@ -75,7 +75,7 @@ const createAuctionValidator = async (
       return;
     }
 
-    if (!reserve_price) {
+    if (!buynow_price) {
       res.status(400).json({ message: "Reserve price is required!" });
       return;
     }
@@ -85,10 +85,10 @@ const createAuctionValidator = async (
       return;
     }
 
-    // Ensure reserve_price is a valid positive number, if provided
-    let parsedReservePrice = reserve_price;
-    if (reserve_price !== undefined && typeof reserve_price === "string") {
-      parsedReservePrice = Number(reserve_price);
+    // Ensure buynow_price is a valid positive number, if provided
+    let parsedReservePrice = buynow_price;
+    if (buynow_price !== undefined && typeof buynow_price === "string") {
+      parsedReservePrice = Number(buynow_price);
     }
 
     if (
@@ -176,7 +176,7 @@ const createAuctionValidator = async (
     const auction = new Auction();
     auction.title = title;
     auction.description = description;
-    auction.reserve_price =
+    auction.buynow_price =
       parsedReservePrice !== undefined ? parsedReservePrice : 0;
     auction.start_datetime = startDt ?? new Date();
     auction.end_datetime = endDt ?? new Date();
