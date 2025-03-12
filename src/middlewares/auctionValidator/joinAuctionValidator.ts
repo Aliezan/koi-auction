@@ -52,10 +52,11 @@ const joinAuctionValidator = async (
         .json({ message: "User has already joined this auction!" });
       return;
     }
-    console.log(auction.status);
-    console.log(auction.status === AuctionStatus.STARTED);
-    if (auction.status !== AuctionStatus.STARTED) {
-      res.status(400).json({ message: "Cant join this auction yet!" });
+    if (
+      auction.status !== AuctionStatus.STARTED &&
+      auction.status !== AuctionStatus.PUBLISHED
+    ) {
+      res.status(400).json({ message: "Can't join this auction yet!" });
       return;
     }
 

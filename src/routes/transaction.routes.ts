@@ -13,7 +13,7 @@ const transactionRouter = Router();
 
 transactionRouter.get(
   "/",
-  protect,
+  protect(),
   authorize(["admin"]),
   parsePaginationAndFilters,
   getTransactions,
@@ -21,7 +21,7 @@ transactionRouter.get(
 
 transactionRouter.get(
   "/me",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   parsePaginationAndFilters,
   getUserTransactions,
@@ -29,14 +29,14 @@ transactionRouter.get(
 
 transactionRouter.get(
   "/:id",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   getTransactionById,
 );
 
 transactionRouter.put(
   "/:id",
-  protect,
+  protect(),
   authorize(["admin"]),
   updateDepositValidator,
   updateDepositTransaction,

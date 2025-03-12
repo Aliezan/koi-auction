@@ -15,7 +15,7 @@ authRouter.post("/login", loginUserValidator, loginController);
 authRouter.post("/register", createUserValidator, registerController);
 authRouter.post(
   "/register-admin",
-  protect,
+  protect(),
   authorize(["admin"]),
   createAdminUserValidator,
   registerAdmin,

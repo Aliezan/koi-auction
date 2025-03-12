@@ -15,21 +15,21 @@ const notificationRouter = Router();
 
 notificationRouter.get(
   "/",
-  protect,
+  protect(),
   authorize(["admin"]),
   parsePaginationAndFilters,
   getNotifications,
 );
 // notificationRouter.post(
 //   "/",
-//   protect,
+//   protect(),
 //   authorize(["admin"]),
 //   createNotificationValidator,
 //   createNotification,
 // );
 notificationRouter.get(
   "/me",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   parsePaginationAndFilters,
   getUserNotifications,
@@ -37,21 +37,21 @@ notificationRouter.get(
 
 notificationRouter.post(
   "/blast",
-  protect,
+  protect(),
   authorize(["admin"]),
   blastNotification,
 );
 
 notificationRouter.post(
   "/read/all",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   markAllNotificationAsRead,
 );
 
 notificationRouter.post(
   "/read/:notification_id",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   markNotificationAsRead,
 );

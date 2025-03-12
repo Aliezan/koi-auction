@@ -5,7 +5,7 @@ import { Job } from "../entities/Job";
 
 const jobRouter = Router();
 const jobRepository = AppDataSource.getRepository(Job);
-jobRouter.get("/", protect, authorize(["admin"]), async (req, res) => {
+jobRouter.get("/", protect(), authorize(["admin"]), async (req, res) => {
   const jobs = await jobRepository.findAndCount();
   res.json({ data: jobs });
 });

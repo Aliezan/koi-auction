@@ -55,14 +55,19 @@ export const getAuctions: RequestHandler = async (
 };
 
 // Get auction details by ID
-export const getAuctionDetails: RequestHandler = async (
+export const getAuctionDetails: AuthenticatedRequestHandler = async (
   req: Request,
   res: Response,
   next,
 ): Promise<void> => {
   const { auction_id } = req.params;
+  const { user } = req as AuthenticatedRequest;
+
   try {
-    const auction = await auctionService.getAuctionById(auction_id);
+    const auction = await auctionService.getAuctionById(
+      auction_id,
+      user.user_id,
+    );
     sendSuccessResponse(res, { data: [auction] });
   } catch (error) {
     next(error);

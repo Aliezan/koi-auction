@@ -13,13 +13,13 @@ const bidRouter = Router();
 
 bidRouter.get(
   "/",
-  protect,
+  protect(),
   authorize(["admin"]),
   parsePaginationAndFilters,
   getBids,
 );
-bidRouter.get("/me", protect, getBidByUserId);
+bidRouter.get("/me", protect(), getBidByUserId);
 bidRouter.get("/auction/:auction_id", getBidsByAuctionId);
-bidRouter.post("/:auction_id", protect, createBidValidator, placeBid);
+bidRouter.post("/:auction_id", protect(), createBidValidator, placeBid);
 
 export default bidRouter;

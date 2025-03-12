@@ -21,7 +21,7 @@ import Wallet from "./Wallet";
 import AuctionParticipant from "./AuctionParticipant";
 import Notification from "./Notification";
 import Warning from "./Warning";
-import { News } from "./News";
+import News from "./News";
 
 export enum UserRole {
   ADMIN = "admin",

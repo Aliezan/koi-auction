@@ -11,7 +11,7 @@ import addToWishlistValidator from "../middlewares/wishlistValidator/addToWishli
 const wishlistRouter = Router();
 wishlistRouter.get(
   "/",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   parsePaginationAndFilters,
   getUserWishlists,
@@ -19,7 +19,7 @@ wishlistRouter.get(
 
 wishlistRouter.post(
   "/:auction_id",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   addToWishlistValidator,
   addToWishlist,
@@ -27,7 +27,7 @@ wishlistRouter.post(
 
 wishlistRouter.delete(
   "/:auction_id",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   removeFromWishlist,
 );

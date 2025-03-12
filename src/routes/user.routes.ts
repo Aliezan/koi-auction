@@ -12,13 +12,13 @@ const userRouter = Router();
 
 userRouter.get(
   "/",
-  protect,
+  protect(),
   parsePaginationAndFilters,
   authorize(["admin"]),
   getAllUsers,
 );
-userRouter.get("/me", protect, getUserInfo);
-userRouter.get("/:id", protect, authorize(["user", "admin"]), getUserById);
-userRouter.put("/:id", protect, authorize(["user"]), updateUser);
+userRouter.get("/me", protect(), getUserInfo);
+userRouter.get("/:id", protect(), authorize(["user", "admin"]), getUserById);
+userRouter.put("/:id", protect(), authorize(["user"]), updateUser);
 
 export default userRouter;

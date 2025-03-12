@@ -33,14 +33,14 @@ const applyBidFilters = (
     });
   }
 
-  if (filters.bidAmountMin !== undefined) {
-    qb.andWhere("bid.bid_amount <= :bidAmountMin", {
-      bidAmountMin: filters.bidAmountMin,
+  if (filters.bidAmountMax !== undefined) {
+    qb.andWhere("bid.bid_amount <= :bidAmountMax", {
+      bidAmountMax: filters.bidAmountMax,
     });
   }
 
   if (filters.bidTimeFrom) {
-    qb.andWhere("bid.bid_time >= :.bidTimeFrom", {
+    qb.andWhere("bid.bid_time >= :bidTimeFrom", {
       bidTimeFrom: filters.bidTimeFrom,
     });
   }
@@ -52,13 +52,13 @@ const applyBidFilters = (
   }
 
   if (filters.userId) {
-    qb.andWhere("user.user_id = :userId", {
+    qb.andWhere("bid.user_id = :userId", {
       userId: filters.userId,
     });
   }
 
   if (filters.auctionId) {
-    qb.andWhere("auction.auction_id = :auctionId", {
+    qb.andWhere("bid.auction_id = :auctionId", {
       auctionId: filters.auctionId,
     });
   }
@@ -85,7 +85,7 @@ const bidRepository = dataSource.getRepository(Bid).extend({
   ) {
     const qb = this.createQueryBuilder("bid")
       .leftJoinAndSelect("bid.auction", "auction")
-      .leftJoin("bid.user", "user")
+      .leftJoinAndSelect("bid.user", "user") // FIXED: Use leftJoinAndSelect
       .select([
         "bid",
         "auction.auction_id",
@@ -120,7 +120,7 @@ const bidRepository = dataSource.getRepository(Bid).extend({
   ) {
     const qb = this.createQueryBuilder("bid")
       .leftJoinAndSelect("bid.auction", "auction")
-      .leftJoin("bid.user", "user")
+      .leftJoinAndSelect("bid.user", "user") // FIXED: Use leftJoinAndSelect
       .select(["bid", "auction", "user.user_id", "user.username", "user.email"])
       .where("auction.auction_id = :auction_id", { auction_id });
 
@@ -145,7 +145,7 @@ const bidRepository = dataSource.getRepository(Bid).extend({
     const queryBuilder = this.createQueryBuilder("bid")
       .leftJoinAndSelect("bid.auction", "auction")
       .leftJoinAndSelect("bid.user", "user")
-      .where("user.user_id = :user_id", { user_id });
+      .where("bid.user_id = :user_id", { user_id }); // FIXED: Reference bid.user_id
 
     // Apply filters
     if (filters) {
@@ -156,6 +156,16 @@ const bidRepository = dataSource.getRepository(Bid).extend({
     applyPagination(queryBuilder, pagination);
     const [bids, count] = await queryBuilder.getManyAndCount();
     return { bids, count };
+  },
+
+  async getHighestBid(auction_id: string): Promise<Bid | null> {
+    return this.createQueryBuilder("bid")
+      .where("bid.auction_id = :auction_id", { auction_id })
+      .leftJoinAndSelect("bid.auction", "auction")
+      .leftJoinAndSelect("bid.user", "user")
+      .orderBy("bid.bid_amount", "DESC")
+      .addOrderBy("bid.bid_time", "ASC") // If two bids have the same amount, prioritize the earlier one
+      .getOne();
   },
 });
 

@@ -76,7 +76,7 @@ const createAuctionValidator = async (
     }
 
     if (!buynow_price) {
-      res.status(400).json({ message: "Reserve price is required!" });
+      res.status(400).json({ message: "Buy now price is required!" });
       return;
     }
 

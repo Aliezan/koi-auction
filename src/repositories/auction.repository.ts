@@ -101,7 +101,6 @@ const createBaseQuery = (repository: Repository<Auction>) =>
     .leftJoinAndSelect("auction.participants", "participants")
     .leftJoin("participants.user", "participant_user")
     .orderBy("participants.joined_at", "DESC")
-
     .addSelect(["participant_user.user_id", "participant_user.username"]);
 
 const auctionRepository = dataSource.getRepository(Auction).extend({
@@ -119,17 +118,14 @@ const auctionRepository = dataSource.getRepository(Auction).extend({
     const [auctions, count] = await qb.getManyAndCount();
     return { auctions, count };
   },
-  async findAuctionById(auction_id: string) {
+  async findAuctionById(auction_id: string, user_id?: string) {
     const qb = createBaseQuery(this);
-
-    // Add any additional condition for auction_id
     qb.where("auction.auction_id = :auction_id", { auction_id });
 
-    // Execute the query
     const auction = await qb.getOne();
 
     if (auction) {
-      // Fix: Count participants directly from auction_participant table
+      // Count participants
       const participantsCount = await this.createQueryBuilder("auction")
         .select("COUNT(participants.auction_participant_id)", "count")
         .leftJoin("auction.participants", "participants")
@@ -138,9 +134,22 @@ const auctionRepository = dataSource.getRepository(Auction).extend({
         .then((result) => Number(result.count));
 
       auction.participants_count = participantsCount;
+
+      // Check if user has joined
+      let hasJoined = false;
+      if (user_id) {
+        const participant = await this.createQueryBuilder("auction")
+          .leftJoin("auction.participants", "participants")
+          .where("auction.auction_id = :auction_id", { auction_id })
+          .andWhere("participants.user_id = :user_id", { user_id })
+          .getOne();
+        hasJoined = !!participant;
+      }
+
+      return { ...auction, hasJoined };
     }
 
-    return auction;
+    return null;
   },
 
   async findAuctionWithBids(auction_id: string) {

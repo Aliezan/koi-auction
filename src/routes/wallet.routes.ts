@@ -15,17 +15,17 @@ const walletRouter = Router();
 
 walletRouter.get(
   "/",
-  protect,
+  protect(),
   authorize(["admin"]),
   parsePaginationAndFilters,
   getAllWallets,
 );
-walletRouter.get("/me", protect, authorize(["user"]), getWalletByUserId);
-walletRouter.get("/:id", protect, authorize(["admin"]), getWalletById);
-walletRouter.put("/:id", protect, authorize(["admin"]), updateWallet);
+walletRouter.get("/me", protect(), authorize(["user"]), getWalletByUserId);
+walletRouter.get("/:id", protect(), authorize(["admin"]), getWalletById);
+walletRouter.put("/:id", protect(), authorize(["admin"]), updateWallet);
 walletRouter.post(
   "/deposit",
-  protect,
+  protect(),
   authorize(["user", "admin"]),
   uploadProofOfPayment,
   createDepositValidator,

@@ -43,7 +43,7 @@ const getStatus: RequestHandler = async (req, res, next) => {
 
 statsRouter.get(
   "/",
-  protect,
+  protect(),
   authorize(["admin"]),
   parsePaginationAndFilters,
   getStatus,

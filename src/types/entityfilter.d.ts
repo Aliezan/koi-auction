@@ -1,4 +1,5 @@
 import { AuctionStatus } from "../entities/Auction";
+import { NewsStatus } from "../entities/News";
 import { TransactionStatus, TransactionType } from "../entities/Transaction";
 
 export interface IBaseFilter {
@@ -79,4 +80,13 @@ export interface INotificationFilter extends IBaseFilter {
   referenceId?: string;
   createdAtFrom?: Date;
   createdAtTo?: Date;
+}
+
+export interface INewsFilter extends IBaseFilter {
+  newsId?: string; // Filter by specific news ID
+  title?: string; // Filter by news title
+  content?: string; // Filter by news content
+  createdAtFrom?: Date; // Filter by creation date (earliest)
+  createdAtTo?: Date; // Filter by creation date (latest)
+  status?: NewsStatus; // Filter by news status
 }

@@ -21,7 +21,7 @@ const auctionRouter = Router();
 auctionRouter.get("/", parsePaginationAndFilters, getAuctions);
 auctionRouter.post(
   "/",
-  protect,
+  protect(),
   authorize(["admin"]),
   createAuctionValidator,
   createAuction,
@@ -29,31 +29,31 @@ auctionRouter.post(
 
 auctionRouter.get(
   "/participated",
-  protect,
+  protect(),
   parsePaginationAndFilters,
   getAuctionJoinedByUserId,
 );
 
-auctionRouter.get("/:auction_id", getAuctionDetails);
+auctionRouter.get("/:auction_id", protect(false), getAuctionDetails);
 auctionRouter.put(
   "/:auction_id",
-  protect,
+  protect(),
   authorize(["admin"]),
   updateAuctionValidator,
   updateAuction,
 );
 auctionRouter.post(
   "/:auction_id/join",
-  protect,
+  protect(),
   joinAuctionValidator,
   joinAuction,
 );
 
-auctionRouter.post("/:auction_id/leave", protect, leaveAuction);
+auctionRouter.post("/:auction_id/leave", protect(), leaveAuction);
 
 auctionRouter.delete(
   "/:auction_id",
-  protect,
+  protect(),
   authorize(["admin"]),
   deleteAuctionValidator,
   deleteAuction,

@@ -30,8 +30,8 @@ export const getAllAuctions = async (
   return { auctions, count };
 };
 
-const getAuctionById = async (auction_id: string) => {
-  const auction = await auctionRepository.findAuctionById(auction_id);
+const getAuctionById = async (auction_id: string, user_id?: string) => {
+  const auction = await auctionRepository.findAuctionById(auction_id, user_id);
   if (!auction) {
     throw ErrorHandler.notFound(`Auction with ID ${auction_id} not found`);
   }
